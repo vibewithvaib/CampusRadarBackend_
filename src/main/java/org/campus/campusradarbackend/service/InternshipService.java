@@ -2,6 +2,7 @@ package org.campus.campusradarbackend.service;
 
 import lombok.RequiredArgsConstructor;
 import org.campus.campusradarbackend.dto.InternshipPostRequest;
+import org.campus.campusradarbackend.dto.InternshipPostingResponse;
 import org.campus.campusradarbackend.model.InternshipPosting;
 import org.campus.campusradarbackend.model.User;
 import org.campus.campusradarbackend.repository.InternshipPostingRepository;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +32,11 @@ public class InternshipService {
     }
 
     @Transactional(readOnly = true)
-    public List<InternshipPosting> getInternshipsByRecruiter(User recruiter) {
-        return internshipRepository.findByRecruiterId(recruiter.getId());
+    public List<InternshipPostingResponse> getInternshipsByRecruiter(User recruiter) {
+        List<InternshipPosting> postings = internshipRepository.findByRecruiterId(recruiter.getId());
+
+        return postings.stream()
+                .map(InternshipPostingResponse::fromEntity)
+                .collect(Collectors.toList());
     }
 }

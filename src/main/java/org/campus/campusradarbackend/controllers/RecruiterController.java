@@ -2,6 +2,7 @@ package org.campus.campusradarbackend.controllers;
 
 import lombok.RequiredArgsConstructor;
 import org.campus.campusradarbackend.dto.InternshipPostRequest;
+import org.campus.campusradarbackend.dto.InternshipPostingResponse;
 import org.campus.campusradarbackend.model.InternshipPosting;
 import org.campus.campusradarbackend.model.User;
 import org.campus.campusradarbackend.service.InternshipService;
@@ -28,8 +29,9 @@ public class RecruiterController {
     }
 
     @GetMapping("/internships")
-    public ResponseEntity<List<InternshipPosting>> getMyPostedInternships(@AuthenticationPrincipal User recruiter) {
-        List<InternshipPosting> postings = internshipService.getInternshipsByRecruiter(recruiter);
-        return ResponseEntity.ok(postings);
+    public ResponseEntity<List<InternshipPostingResponse>> getMyPostedInternships(@AuthenticationPrincipal User recruiter) {
+        // The service now returns a list of DTOs, which we can safely return here.
+        List<InternshipPostingResponse> postingResponses = internshipService.getInternshipsByRecruiter(recruiter);
+        return ResponseEntity.ok(postingResponses);
     }
 }
