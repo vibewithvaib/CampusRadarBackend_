@@ -29,6 +29,14 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String password;
 
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private StudentProfile studentProfile;
+
+    // New relationship with RecruiterProfile
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private RecruiterProfile recruiterProfile;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;

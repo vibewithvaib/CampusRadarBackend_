@@ -16,4 +16,12 @@ public class SignUpRequest {
     private String email;
     private String password;
     private Role role;
+
+
+    private String rollNumber;
+
+
+    private String companyName;
+    private String linkedInProfile;
+    private String workEmail;
 }

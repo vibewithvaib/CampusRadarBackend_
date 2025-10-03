@@ -20,6 +20,9 @@ public class StudentProfile {
     private String headline;
     private String resumeUrl;
 
+    @Column(nullable = false, unique = true)
+    private String rollNumber;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "student_skills", joinColumns = @JoinColumn(name = "profile_id"))
     @Column(name = "skill")

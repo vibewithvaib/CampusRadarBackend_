@@ -1,9 +1,8 @@
 package org.campus.campusradarbackend.controllers;
 
 import lombok.RequiredArgsConstructor;
-import org.campus.campusradarbackend.dto.ApplicationResponse;
-import org.campus.campusradarbackend.dto.InternshipPostingResponse;
-import org.campus.campusradarbackend.dto.UserResponse;
+import org.campus.campusradarbackend.dto.*;
+import org.campus.campusradarbackend.model.InternshipPosting;
 import org.campus.campusradarbackend.service.AdminService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,38 +17,35 @@ import java.util.List;
 public class AdminController {
     private final AdminService adminService;
 
-    @GetMapping("/users")
-    public ResponseEntity<List<UserResponse>> getAllUsers() {
-        return ResponseEntity.ok(adminService.getAllUsers());
+
+    @GetMapping("/users/pending/students")
+    public ResponseEntity<List<StudentDetailResponse>> getPendingStudents() {
+        return ResponseEntity.ok(adminService.getPendingStudents());
     }
 
-    @GetMapping("/internships")
-    public ResponseEntity<List<InternshipPostingResponse>> getAllInternships() {
-        return ResponseEntity.ok(adminService.getAllInternships());
+
+    @GetMapping("/users/pending/recruiters")
+    public ResponseEntity<List<RecruiterDetailResponse>> getPendingRecruiters() {
+        return ResponseEntity.ok(adminService.getPendingRecruiters());
     }
 
-    @GetMapping("/applications")
-    public ResponseEntity<List<ApplicationResponse>> getAllApplications() {
-        return ResponseEntity.ok(adminService.getAllApplications());
-    }
-
-    @GetMapping("/users/pending")
-    public ResponseEntity<List<UserResponse>> getPendingUsers() {
-        return ResponseEntity.ok(adminService.getPendingUserApprovals());
-    }
-
-    @PatchMapping("/users/{userId}/approve")
-    public ResponseEntity<UserResponse> approveUser(@PathVariable Long userId) {
-        return ResponseEntity.ok(adminService.approveUser(userId));
-    }
 
     @GetMapping("/internships/pending")
-    public ResponseEntity<List<InternshipPostingResponse>> getPendingInternships() {
-        return ResponseEntity.ok(adminService.getPendingInternshipApprovals());
+    public ResponseEntity<List<InternshipPosting>> getPendingInternships() {
+        return ResponseEntity.ok(adminService.getPendingInternships());
     }
 
+
+    @PatchMapping("/users/{userId}/approve")
+    public ResponseEntity<Void> approveUser(@PathVariable Long userId) {
+        adminService.approveUser(userId);
+        return ResponseEntity.ok().build();
+    }
+
+
     @PatchMapping("/internships/{internshipId}/approve")
-    public ResponseEntity<InternshipPostingResponse> approveInternship(@PathVariable Long internshipId) {
-        return ResponseEntity.ok(adminService.approveInternship(internshipId));
+    public ResponseEntity<Void> approveInternship(@PathVariable Long internshipId) {
+        adminService.approveInternship(internshipId);
+        return ResponseEntity.ok().build();
     }
 }
