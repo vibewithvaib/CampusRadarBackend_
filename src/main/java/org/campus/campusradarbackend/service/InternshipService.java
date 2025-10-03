@@ -41,7 +41,7 @@ public class InternshipService {
     }
 
     public List<InternshipPostingResponse> getAllApprovedInternships() {
-        return internshipRepository.findByApprovedIsTrue()
+        return internshipRepository.findByisApprovedTrue()
                 .stream()
                 .map(InternshipPostingResponse::fromEntity)
                 .collect(Collectors.toList());

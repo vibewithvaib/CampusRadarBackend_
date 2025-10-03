@@ -49,7 +49,7 @@ public class AdminService {
 
 
     public List<UserResponse> getPendingUserApprovals() {
-        return userRepository.findByEnabledFalse().stream().map(UserResponse::fromEntity).collect(Collectors.toList());
+        return userRepository.findByIsEnabledFalse().stream().map(UserResponse::fromEntity).collect(Collectors.toList());
     }
 
     @Transactional
@@ -61,7 +61,7 @@ public class AdminService {
     }
 
     public List<InternshipPostingResponse> getPendingInternshipApprovals() {
-        return internshipPostingRepository.findByApprovedIsFalse().stream().map(InternshipPostingResponse::fromEntity).collect(Collectors.toList());
+        return internshipPostingRepository.findByisApprovedFalse().stream().map(InternshipPostingResponse::fromEntity).collect(Collectors.toList());
     }
 
     @Transactional
