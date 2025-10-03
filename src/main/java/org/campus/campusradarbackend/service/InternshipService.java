@@ -27,7 +27,7 @@ public class InternshipService {
         newPosting.setDurationInWeeks(request.getDurationInWeeks());
         newPosting.setStipend(request.getStipend());
         newPosting.setRequiredSkills(request.getRequiredSkills());
-
+        newPosting.setApproved(false);
         return internshipRepository.save(newPosting);
     }
 
@@ -36,6 +36,13 @@ public class InternshipService {
         List<InternshipPosting> postings = internshipRepository.findByRecruiterId(recruiter.getId());
 
         return postings.stream()
+                .map(InternshipPostingResponse::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    public List<InternshipPostingResponse> getAllApprovedInternships() {
+        return internshipRepository.findByApprovedIsTrue()
+                .stream()
                 .map(InternshipPostingResponse::fromEntity)
                 .collect(Collectors.toList());
     }

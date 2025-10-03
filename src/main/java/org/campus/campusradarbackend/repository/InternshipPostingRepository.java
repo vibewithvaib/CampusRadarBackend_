@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface InternshipPostingRepository extends JpaRepository<InternshipPosting, Long> {
     List<InternshipPosting> findByRecruiterId(Long recruiterId);
+    List<InternshipPosting> findByApprovedIsTrue();
+    List<InternshipPosting> findByApprovedIsFalse();
 }

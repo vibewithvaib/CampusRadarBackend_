@@ -22,7 +22,7 @@ public class AdminService {
     private final UserRepository userRepository;
     private final InternshipPostingRepository internshipRepository;
     private final ApplicationRepository applicationRepository;
-
+    private final InternshipPostingRepository internshipPostingRepository;
     @Transactional(readOnly = true)
     public List<UserResponse> getAllUsers() {
         List<User> users = userRepository.findAll();
@@ -45,5 +45,30 @@ public class AdminService {
         return applications.stream()
                 .map(ApplicationResponse::fromEntity)
                 .collect(Collectors.toList());
+    }
+
+
+    public List<UserResponse> getPendingUserApprovals() {
+        return userRepository.findByEnabledFalse().stream().map(UserResponse::fromEntity).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public UserResponse approveUser(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        user.setEnabled(true);
+        User savedUser = userRepository.save(user);
+        return UserResponse.fromEntity(savedUser);
+    }
+
+    public List<InternshipPostingResponse> getPendingInternshipApprovals() {
+        return internshipPostingRepository.findByApprovedIsFalse().stream().map(InternshipPostingResponse::fromEntity).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public InternshipPostingResponse approveInternship(Long internshipId) {
+        InternshipPosting internship = internshipPostingRepository.findById(internshipId).orElseThrow(() -> new RuntimeException("Internship not found"));
+        internship.setApproved(true);
+        InternshipPosting savedInternship = internshipPostingRepository.save(internship);
+        return InternshipPostingResponse.fromEntity(savedInternship);
     }
 }

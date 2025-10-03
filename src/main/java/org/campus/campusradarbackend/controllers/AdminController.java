@@ -7,9 +7,7 @@ import org.campus.campusradarbackend.dto.UserResponse;
 import org.campus.campusradarbackend.service.AdminService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -33,5 +31,25 @@ public class AdminController {
     @GetMapping("/applications")
     public ResponseEntity<List<ApplicationResponse>> getAllApplications() {
         return ResponseEntity.ok(adminService.getAllApplications());
+    }
+
+    @GetMapping("/users/pending")
+    public ResponseEntity<List<UserResponse>> getPendingUsers() {
+        return ResponseEntity.ok(adminService.getPendingUserApprovals());
+    }
+
+    @PatchMapping("/users/{userId}/approve")
+    public ResponseEntity<UserResponse> approveUser(@PathVariable Long userId) {
+        return ResponseEntity.ok(adminService.approveUser(userId));
+    }
+
+    @GetMapping("/internships/pending")
+    public ResponseEntity<List<InternshipPostingResponse>> getPendingInternships() {
+        return ResponseEntity.ok(adminService.getPendingInternshipApprovals());
+    }
+
+    @PatchMapping("/internships/{internshipId}/approve")
+    public ResponseEntity<InternshipPostingResponse> approveInternship(@PathVariable Long internshipId) {
+        return ResponseEntity.ok(adminService.approveInternship(internshipId));
     }
 }
