@@ -2,6 +2,7 @@ package org.campus.campusradarbackend.service;
 
 import lombok.RequiredArgsConstructor;
 import org.campus.campusradarbackend.dto.ApplicationResponse;
+import org.campus.campusradarbackend.model.ApplicationStatus;
 import org.campus.campusradarbackend.model.InternshipApplication;
 import org.campus.campusradarbackend.model.InternshipPosting;
 import org.campus.campusradarbackend.model.User;
@@ -63,4 +64,31 @@ public class ApplicationService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
+    public ApplicationResponse updateApplicationStatus(User recruiter, Long applicationId, ApplicationStatus newStatus) throws AccessDeniedException {
+        InternshipApplication application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new RuntimeException("Application not found with ID: " + applicationId));
+
+        // Security Check: Ensure the recruiter owns the parent internship of this application
+        if (!application.getInternship().getRecruiter().getId().equals(recruiter.getId())) {
+            throw new AccessDeniedException("You are not authorized to update this application.");
+        }
+
+        application.setStatus(newStatus);
+        InternshipApplication updatedApplication = applicationRepository.save(application);
+        return ApplicationResponse.fromEntity(updatedApplication);
+    }
+
+    @Transactional
+    public void revokeApplication(User student, Long applicationId) throws AccessDeniedException {
+        InternshipApplication application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new RuntimeException("Application not found with ID: " + applicationId));
+
+        // Security Check: Ensure the student owns this application
+        if (!application.getStudent().getId().equals(student.getId())) {
+            throw new AccessDeniedException("You are not authorized to revoke this application.");
+        }
+
+        applicationRepository.delete(application);
+    }
 }

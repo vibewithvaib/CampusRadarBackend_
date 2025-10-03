@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.campus.campusradarbackend.dto.ApplicationResponse;
 import org.campus.campusradarbackend.dto.InternshipPostRequest;
 import org.campus.campusradarbackend.dto.InternshipPostingResponse;
+import org.campus.campusradarbackend.dto.UpdateApplicationStatusUpdate;
 import org.campus.campusradarbackend.model.InternshipPosting;
 import org.campus.campusradarbackend.model.User;
 import org.campus.campusradarbackend.service.ApplicationService;
@@ -44,5 +45,14 @@ public class RecruiterController {
             @PathVariable Long internshipId) throws AccessDeniedException {
         List<ApplicationResponse> applications = applicationService.getApplicationsForInternship(recruiter, internshipId);
         return ResponseEntity.ok(applications);
+    }
+
+    @PatchMapping("/applications/{applicationId}/status")
+    public ResponseEntity<ApplicationResponse> updateApplicationStatus(
+            @PathVariable Long applicationId,
+            @RequestBody UpdateApplicationStatusUpdate request,
+            @AuthenticationPrincipal User recruiter) throws AccessDeniedException {
+        ApplicationResponse updatedApplication = applicationService.updateApplicationStatus(recruiter, applicationId, request.getApplicationStatus());
+        return ResponseEntity.ok(updatedApplication);
     }
 }

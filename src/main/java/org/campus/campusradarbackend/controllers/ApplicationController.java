@@ -6,10 +6,9 @@ import org.campus.campusradarbackend.model.User;
 import org.campus.campusradarbackend.service.ApplicationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.nio.file.AccessDeniedException;
 
 @RestController
 @RequestMapping("/api/apply")
@@ -24,5 +23,10 @@ public class ApplicationController {
 
         ApplicationResponse applicationResponse = applicationService.applyForInternship(student, internshipId);
         return ResponseEntity.ok(applicationResponse);
+    }
+    @DeleteMapping("/revoke/{applicationId}")
+    public ResponseEntity<Void> revokeApplication(@PathVariable Long applicationId, @AuthenticationPrincipal User student) throws AccessDeniedException {
+        applicationService.revokeApplication(student, applicationId);
+        return ResponseEntity.noContent().build();
     }
 }
