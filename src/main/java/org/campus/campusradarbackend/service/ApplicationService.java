@@ -10,6 +10,10 @@ import org.campus.campusradarbackend.repository.InternshipPostingRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.file.AccessDeniedException;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class ApplicationService {
@@ -34,4 +38,29 @@ public class ApplicationService {
         InternshipApplication savedApplication = applicationRepository.save(newApplication);
         return ApplicationResponse.fromEntity(savedApplication);
     }
+
+    @Transactional(readOnly = true)
+    public List<ApplicationResponse> getApplicationsForStudent(User student) {
+        List<InternshipApplication> applications = applicationRepository.findByStudentId(student.getId());
+        return applications.stream()
+                .map(ApplicationResponse::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<ApplicationResponse> getApplicationsForInternship(User recruiter, Long internshipId) throws AccessDeniedException {
+        // Security Check: Ensure the recruiter owns this internship
+        InternshipPosting posting = internshipRepository.findById(internshipId)
+                .orElseThrow(() -> new RuntimeException("Internship not found with ID: " + internshipId));
+
+        if (!posting.getRecruiter().getId().equals(recruiter.getId())) {
+            throw new AccessDeniedException("You are not authorized to view applications for this internship.");
+        }
+
+        List<InternshipApplication> applications = applicationRepository.findByInternshipId(internshipId);
+        return applications.stream()
+                .map(ApplicationResponse::fromEntity)
+                .collect(Collectors.toList());
+    }
+
 }
