@@ -18,41 +18,82 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class AdminService {
+
     private final UserRepository userRepository;
     private final InternshipPostingRepository internshipPostingRepository;
+    private final AiServiceClient aiServiceClient; // Inject the new client
+
+
+
+    @Transactional
+    public UserResponse approveUser(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        user.setEnabled(true);
+        User approvedUser = userRepository.save(user);
+
+        // --- INGESTION POINT ---
+        // If the approved user is a student, format their profile and send it to the AI service.
+        if (approvedUser.getRole() == Role.STUDENT) {
+            String studentText = formatStudentForRag(approvedUser);
+            aiServiceClient.ingestDocument(studentText);
+        }
+        return UserResponse.fromEntity(approvedUser);
+    }
+
+    @Transactional
+    public InternshipPosting approveInternship(Long internshipId) {
+        InternshipPosting internship = internshipPostingRepository.findById(internshipId)
+                .orElseThrow(() -> new RuntimeException("Internship not found"));
+        internship.setApproved(true);
+        InternshipPosting approvedInternship = internshipPostingRepository.save(internship);
+
+        String internshipText = formatInternshipForRag(approvedInternship);
+        aiServiceClient.ingestDocument(internshipText);
+
+        return approvedInternship;
+    }
+
+    private String formatStudentForRag(User student) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Student Profile:\n");
+        sb.append("ID: ").append(student.getId()).append("\n");
+        sb.append("Name: ").append(student.getFirstName()).append(" ").append(student.getLastName()).append("\n");
+        if (student.getStudentProfile() != null) {
+            sb.append("Headline: ").append(student.getStudentProfile().getHeadline()).append("\n");
+            sb.append("Skills: ").append(String.join(", ", student.getStudentProfile().getSkills())).append("\n");
+        }
+        return sb.toString();
+    }
+
+    private String formatInternshipForRag(InternshipPosting internship) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Internship Posting:\n");
+        sb.append("ID: ").append(internship.getId()).append("\n"); // IMPORTANT: Include ID
+        sb.append("Title: ").append(internship.getTitle()).append("\n");
+        sb.append("Required Skills: ").append(String.join(", ", internship.getRequiredSkills())).append("\n");
+        return sb.toString();
+    }
+
+    // --- Other existing admin methods ---
+    public List<UserResponse> getAllUsers() {
+        return userRepository.findAll().stream().map(UserResponse::fromEntity).collect(Collectors.toList());
+    }
 
     public List<StudentDetailResponse> getPendingStudents() {
-        return userRepository.findByisEnabledFalseAndRole(Role.STUDENT)
-                .stream()
+        return userRepository.findByIsEnabledFalse().stream()
+                .filter(user -> user.getRole() == Role.STUDENT)
                 .map(StudentDetailResponse::fromEntity)
                 .collect(Collectors.toList());
     }
 
     public List<RecruiterDetailResponse> getPendingRecruiters() {
-        return userRepository.findByisEnabledFalseAndRole(Role.RECRUITER)
-                .stream()
+        return userRepository.findByIsEnabledFalse().stream()
+                .filter(user -> user.getRole() == Role.RECRUITER)
                 .map(RecruiterDetailResponse::fromEntity)
                 .collect(Collectors.toList());
     }
 
     public List<InternshipPosting> getPendingInternships() {
         return internshipPostingRepository.findByisApprovedFalse();
-    }
-
-
-    @Transactional
-    public void approveUser(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
-        user.setEnabled(true);
-        userRepository.save(user);
-    }
-
-    @Transactional
-    public void approveInternship(Long internshipId) {
-        InternshipPosting posting = internshipPostingRepository.findById(internshipId)
-                .orElseThrow(() -> new RuntimeException("Internship posting not found with ID: " + internshipId));
-        posting.setApproved(true);
-        internshipPostingRepository.save(posting);
     }
 }

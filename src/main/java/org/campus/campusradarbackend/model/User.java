@@ -1,5 +1,6 @@
 package org.campus.campusradarbackend.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,7 +34,10 @@ public class User implements UserDetails {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private StudentProfile studentProfile;
 
-    // New relationship with RecruiterProfile
+    @OneToMany(mappedBy = "recruiter", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<InternshipPosting> internshipPostings;
+
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private RecruiterProfile recruiterProfile;
 
@@ -49,6 +53,7 @@ public class User implements UserDetails {
         return List.of(new SimpleGrantedAuthority("ROLE_"+role.name()));
     }
 
+    public void setRole(Role role) {}
     @Override
     public String getPassword() {
         return password;
