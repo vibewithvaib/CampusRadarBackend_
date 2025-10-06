@@ -25,11 +25,11 @@ public class RecruiterController {
     private final ApplicationService applicationService;
     // This endpoint is secured for RECRUITERs.
     @PostMapping("/internships")
-    public ResponseEntity<InternshipPosting> postInternship(
+    public ResponseEntity<InternshipPostingResponse> postInternship(
             @AuthenticationPrincipal User recruiter,
             @RequestBody InternshipPostRequest request) {
         InternshipPosting newPosting = internshipService.createInternship(recruiter, request);
-        return ResponseEntity.ok(newPosting);
+        return ResponseEntity.ok(InternshipPostingResponse.fromEntity(newPosting));
     }
 
     @GetMapping("/internships")

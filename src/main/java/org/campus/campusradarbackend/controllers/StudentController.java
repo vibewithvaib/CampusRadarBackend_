@@ -34,11 +34,11 @@ public class StudentController {
     }
 
     @PostMapping("/profile")
-    public ResponseEntity<StudentProfile> createOrUpdateMyProfile(
+    public ResponseEntity<StudentProfileResponse> createOrUpdateMyProfile(
             @AuthenticationPrincipal User user,
             @RequestBody StudentProfileRequest request) {
         StudentProfile updatedProfile = studentProfileService.createOrUpdateProfile(user, request);
-        return ResponseEntity.ok(updatedProfile);
+        return ResponseEntity.ok(StudentProfileResponse.fromEntity(updatedProfile));
     }
 
     @GetMapping("/my-applications")
