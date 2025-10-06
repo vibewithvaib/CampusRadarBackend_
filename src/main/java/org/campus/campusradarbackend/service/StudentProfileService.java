@@ -1,6 +1,5 @@
 package org.campus.campusradarbackend.service;
 
-//import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.campus.campusradarbackend.dto.StudentProfileRequest;
 import org.campus.campusradarbackend.dto.StudentProfileResponse;
@@ -10,30 +9,55 @@ import org.campus.campusradarbackend.repository.StudentProfileRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Map;
+
 @Service
 @RequiredArgsConstructor
 public class StudentProfileService {
 
     private final StudentProfileRepository studentProfileRepository;
+    private final AiServiceClient aiServiceClient;
 
-    @Transactional(readOnly = true)
     public StudentProfileResponse getStudentProfile(User user) {
-        StudentProfile profileEntity = studentProfileRepository.findByUserId(user.getId())
-                .orElse(new StudentProfile(user));
-
-        return StudentProfileResponse.fromEntity(profileEntity);
+        StudentProfile profile = studentProfileRepository.findByUserId(user.getId())
+                .orElse(new StudentProfile(user)); // Return a new, empty profile if none exists
+        return StudentProfileResponse.fromEntity(profile);
     }
 
     @Transactional
-    public StudentProfile createOrUpdateProfile(User user, StudentProfileRequest request) {
-
+    public StudentProfileResponse createOrUpdateProfile(User user, StudentProfileRequest request) {
+        // This logic finds an existing profile or creates a new one if it doesn't exist.
         StudentProfile profile = studentProfileRepository.findByUserId(user.getId())
-                .orElse(new StudentProfile(user));
+                .orElseGet(() -> new StudentProfile(user));
 
+        // Update the profile fields from the request.
         profile.setHeadline(request.getHeadline());
         profile.setResumeUrl(request.getResumeUrl());
         profile.setSkills(request.getSkills());
+        profile.setRollNumber(request.getRollNo());
 
-        return studentProfileRepository.save(profile);
+        StudentProfile updatedProfile = studentProfileRepository.save(profile);
+
+        // --- RE-INGESTION POINT ---
+        // After saving the updated profile to our main database,
+        // send the new data to the Python AI service to keep its memory fresh.
+        String studentText = formatStudentForRag(updatedProfile.getUser());
+        Map<String, Object> metadata = Map.of("type", "student", "id", updatedProfile.getUser().getId());
+        aiServiceClient.ingestDocument(studentText, metadata);
+
+        // Convert the updated entity to a DTO before returning to the controller.
+        return StudentProfileResponse.fromEntity(updatedProfile);
+    }
+
+    // Helper method to format the student's profile into text for the AI service
+    private String formatStudentForRag(User student) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Student Profile:\n");
+        sb.append("Name: ").append(student.getFirstName()).append(" ").append(student.getLastName()).append("\n");
+        if (student.getStudentProfile() != null) {
+            sb.append("Headline: ").append(student.getStudentProfile().getHeadline()).append("\n");
+            sb.append("Skills: ").append(String.join(", ", student.getStudentProfile().getSkills())).append("\n");
+        }
+        return sb.toString();
     }
 }

@@ -39,7 +39,10 @@ public class InternshipService {
                 .map(InternshipPostingResponse::fromEntity)
                 .collect(Collectors.toList());
     }
-
+    public InternshipPosting getInternshipById(Long internshipId) {
+        return internshipRepository.findById(internshipId)
+                .orElseThrow(() -> new RuntimeException("Internship not found with ID: " + internshipId));
+    }
     public List<InternshipPostingResponse> getAllApprovedInternships() {
         return internshipRepository.findByisApprovedTrue()
                 .stream()

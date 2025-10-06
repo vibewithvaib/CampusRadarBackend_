@@ -1,51 +1,69 @@
 package org.campus.campusradarbackend.service;
 
-import org.campus.campusradarbackend.dto.AiPromptRequest;
-import org.campus.campusradarbackend.dto.AiRecommendationResponse;
+import org.campus.campusradarbackend.dto.AiInternshipResponse;
+import org.campus.campusradarbackend.dto.AiStudentResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
-
+import java.util.List;
 import java.util.Map;
 
 @Service
 public class AiServiceClient {
+
     private static final Logger logger = LoggerFactory.getLogger(AiServiceClient.class);
     private final WebClient webClient;
+
     public AiServiceClient(WebClient.Builder webClientBuilder) {
         this.webClient = webClientBuilder.baseUrl("http://localhost:5001").build();
     }
-    public void ingestDocument(String text) {
+
+    public void ingestDocument(String text, Map<String, Object> metadata) {
         webClient.post()
                 .uri("/ingest")
-                .bodyValue(Map.of("text", text))
+                .bodyValue(Map.of("text", text, "metadata", metadata))
                 .retrieve()
                 .bodyToMono(Void.class)
                 .doOnError(error -> logger.error("Failed to ingest document: {}", error.getMessage()))
                 .subscribe();
     }
-    public String getCandidateRecommendation(String prompt) {
-        AiPromptRequest request = new AiPromptRequest(prompt);
+
+    /**
+     * Gets a list of recommended student candidates.
+     * @param internshipDescription The text description of the internship.
+     * @param requiredSkills A List of skills required for the internship.
+     * @return A List of AiStudentResponse objects.
+     */
+    // FIX: Updated method signature to accept requiredSkills
+    public List<AiStudentResponse> getCandidateRecommendations(String internshipDescription, List<String> requiredSkills) {
         return webClient.post()
                 .uri("/recommend/candidates")
-                .bodyValue(request)
+                // FIX: Added required_skills to the request body
+                .bodyValue(Map.of(
+                        "internship_description", internshipDescription,
+                        "required_skills", requiredSkills
+                ))
                 .retrieve()
-                .bodyToMono(AiRecommendationResponse.class)
-                .map(AiRecommendationResponse::recommendation)
-                .block(); // Add .block() to wait for the response
+                .bodyToFlux(AiStudentResponse.class)
+                .collectList()
+                .block();
     }
 
-    // FIX: Changed return type from Mono<String> to String
-    public String getInternshipRecommendation(String prompt) {
-        AiPromptRequest request = new AiPromptRequest(prompt);
+    /**
+     * Gets a list of recommended internships for a given student profile.
+     * The request body for this endpoint also needs to be updated.
+     */
+    public List<AiInternshipResponse> getInternshipRecommendations(String studentProfile, List<String> studentSkills) {
         return webClient.post()
                 .uri("/recommend/internships")
-                .bodyValue(request)
+                .bodyValue(Map.of(
+                        "student_profile", studentProfile,
+                        "student_skills", studentSkills
+                ))
                 .retrieve()
-                .bodyToMono(AiRecommendationResponse.class)
-                .map(AiRecommendationResponse::recommendation)
-                .block(); // Add .block() to wait for the response
+                .bodyToFlux(AiInternshipResponse.class)
+                .collectList()
+                .block();
     }
 }

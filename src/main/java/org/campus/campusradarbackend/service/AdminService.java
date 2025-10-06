@@ -9,10 +9,12 @@ import org.campus.campusradarbackend.model.User;
 import org.campus.campusradarbackend.repository.ApplicationRepository;
 import org.campus.campusradarbackend.repository.InternshipPostingRepository;
 import org.campus.campusradarbackend.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,11 +33,13 @@ public class AdminService {
         user.setEnabled(true);
         User approvedUser = userRepository.save(user);
 
-        // --- INGESTION POINT ---
+        // --- INGESTION POINT FOR STUDENTS ---
         // If the approved user is a student, format their profile and send it to the AI service.
         if (approvedUser.getRole() == Role.STUDENT) {
             String studentText = formatStudentForRag(approvedUser);
-            aiServiceClient.ingestDocument(studentText);
+            // Create metadata map with ID and type for the Python service
+            Map<String, Object> metadata = Map.of("type", "student", "id", approvedUser.getId());
+            aiServiceClient.ingestDocument(studentText, metadata);
         }
         return UserResponse.fromEntity(approvedUser);
     }
@@ -47,16 +51,20 @@ public class AdminService {
         internship.setApproved(true);
         InternshipPosting approvedInternship = internshipPostingRepository.save(internship);
 
+        // --- INGESTION POINT FOR INTERNSHIPS ---
+        // Format the internship posting and send it to the AI service.
         String internshipText = formatInternshipForRag(approvedInternship);
-        aiServiceClient.ingestDocument(internshipText);
+        // Create metadata map with ID and type
+        Map<String, Object> metadata = Map.of("type", "internship", "id", approvedInternship.getId());
+        aiServiceClient.ingestDocument(internshipText, metadata);
 
         return approvedInternship;
     }
 
+    // --- Helper methods to format your Java objects into text for the AI service ---
     private String formatStudentForRag(User student) {
         StringBuilder sb = new StringBuilder();
         sb.append("Student Profile:\n");
-        sb.append("ID: ").append(student.getId()).append("\n");
         sb.append("Name: ").append(student.getFirstName()).append(" ").append(student.getLastName()).append("\n");
         if (student.getStudentProfile() != null) {
             sb.append("Headline: ").append(student.getStudentProfile().getHeadline()).append("\n");
@@ -68,8 +76,8 @@ public class AdminService {
     private String formatInternshipForRag(InternshipPosting internship) {
         StringBuilder sb = new StringBuilder();
         sb.append("Internship Posting:\n");
-        sb.append("ID: ").append(internship.getId()).append("\n"); // IMPORTANT: Include ID
         sb.append("Title: ").append(internship.getTitle()).append("\n");
+        sb.append("Description: ").append(internship.getDescription()).append("\n");
         sb.append("Required Skills: ").append(String.join(", ", internship.getRequiredSkills())).append("\n");
         return sb.toString();
     }
