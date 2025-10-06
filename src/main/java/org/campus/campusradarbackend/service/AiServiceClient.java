@@ -1,5 +1,7 @@
 package org.campus.campusradarbackend.service;
 
+import org.campus.campusradarbackend.dto.AiPromptRequest;
+import org.campus.campusradarbackend.dto.AiRecommendationResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -24,21 +26,26 @@ public class AiServiceClient {
                 .doOnError(error -> logger.error("Failed to ingest document: {}", error.getMessage()))
                 .subscribe();
     }
-    public Mono<String> getCandidateRecommendation(String prompt) {
+    public String getCandidateRecommendation(String prompt) {
+        AiPromptRequest request = new AiPromptRequest(prompt);
         return webClient.post()
                 .uri("/recommend/candidates")
-                .bodyValue(Map.of("prompt", prompt))
+                .bodyValue(request)
                 .retrieve()
-                .bodyToMono(Map.class)
-                .map(response -> (String) response.get("recommendation"));
+                .bodyToMono(AiRecommendationResponse.class)
+                .map(AiRecommendationResponse::recommendation)
+                .block(); // Add .block() to wait for the response
     }
 
-    public Mono<String> getInternshipRecommendation(String prompt) {
+    // FIX: Changed return type from Mono<String> to String
+    public String getInternshipRecommendation(String prompt) {
+        AiPromptRequest request = new AiPromptRequest(prompt);
         return webClient.post()
                 .uri("/recommend/internships")
-                .bodyValue(Map.of("prompt", prompt))
+                .bodyValue(request)
                 .retrieve()
-                .bodyToMono(Map.class)
-                .map(response -> (String) response.get("recommendation"));
+                .bodyToMono(AiRecommendationResponse.class)
+                .map(AiRecommendationResponse::recommendation)
+                .block(); // Add .block() to wait for the response
     }
 }
