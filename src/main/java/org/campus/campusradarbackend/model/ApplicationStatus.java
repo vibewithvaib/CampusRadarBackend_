@@ -2,8 +2,9 @@ package org.campus.campusradarbackend.model;
 
 public enum ApplicationStatus {
     APPLIED,
-    VIEWED,
+    NOT_APPLIED,
     SHORTLISTED,
     REJECTED,
-    HIRED
+    HIRED,
+    INVITED
 }

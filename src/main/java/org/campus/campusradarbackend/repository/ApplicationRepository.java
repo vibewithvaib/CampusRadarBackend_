@@ -1,5 +1,6 @@
 package org.campus.campusradarbackend.repository;
 
+import org.campus.campusradarbackend.model.ApplicationStatus;
 import org.campus.campusradarbackend.model.InternshipApplication;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -11,4 +12,5 @@ public interface ApplicationRepository extends JpaRepository<InternshipApplicati
     boolean existsByStudentIdAndInternshipId(Long studentId, Long internshipId);
     List<InternshipApplication> findByInternshipId(Long internshipId);
     List<InternshipApplication> findByStudentId(Long studentId);
+    List<InternshipApplication> findByInternshipIdAndStatus(Long internshipId, ApplicationStatus status);
 }

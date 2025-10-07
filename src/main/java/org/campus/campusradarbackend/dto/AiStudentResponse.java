@@ -5,6 +5,6 @@ import lombok.Data;
 
 @Data
 public class AiStudentResponse {
-    private Integer studentId;
+    private Long studentId;
     private String profileText;
 }

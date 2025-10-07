@@ -32,18 +32,27 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(req -> req
+        return http
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(auth -> auth
+                        // Public endpoints for signup and signin
                         .requestMatchers("/api/auth/**").permitAll()
+
+                        // --- FIX: ADD ROLE-SPECIFIC RULES HERE ---
+                        // Only users with the 'STUDENT' role can access student APIs
+                        .requestMatchers("/api/student/**").hasRole("STUDENT")
+                        // Only users with the 'RECRUITER' role can access recruiter APIs
+                        .requestMatchers("/api/recruiter/**").hasRole("RECRUITER")
+                        // Only users with the 'ADMIN' role can access admin APIs
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/student/**").hasAnyRole("STUDENT", "ADMIN")
-                        .requestMatchers("/api/recruiter/**").hasAnyRole("RECRUITER", "ADMIN")
+
+                        // Any other request must be authenticated
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authenticationProvider(authenticationProvider())
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-        return http.build();
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .userDetailsService(userDetailsService)
+                .build();
     }
 
     @Bean
