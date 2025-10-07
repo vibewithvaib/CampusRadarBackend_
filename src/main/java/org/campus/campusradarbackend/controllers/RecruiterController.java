@@ -55,4 +55,12 @@ public class RecruiterController {
         ApplicationResponse updatedApplication = applicationService.updateApplicationStatus(recruiter, applicationId, request.getApplicationStatus());
         return ResponseEntity.ok(updatedApplication);
     }
+
+    @PostMapping("/internships/{internshipId}/ai-shortlist")
+    public ResponseEntity<List<ApplicationResponse>> aiShortlistApplicants(
+            @PathVariable Long internshipId,
+            @AuthenticationPrincipal User recruiter) throws AccessDeniedException {
+        List<ApplicationResponse> shortlistedApps = applicationService.shortlistRecommendedApplicants(recruiter, internshipId);
+        return ResponseEntity.ok(shortlistedApps);
+    }
 }

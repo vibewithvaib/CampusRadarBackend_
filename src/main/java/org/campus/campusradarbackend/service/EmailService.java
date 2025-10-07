@@ -11,8 +11,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class EmailService {
 
-    @Value("${campusradar.frontend.base-url:https://frontend.com}")
-    private String frontendBaseUrl;
+
 
     @Autowired
     private JavaMailSender mailSender;

@@ -29,13 +29,7 @@ public class AiServiceClient {
                 .subscribe();
     }
 
-    /**
-     * Gets a list of recommended student candidates.
-     * @param internshipDescription The text description of the internship.
-     * @param requiredSkills A List of skills required for the internship.
-     * @return A List of AiStudentResponse objects.
-     */
-    // FIX: Updated method signature to accept requiredSkills
+
     public List<AiStudentResponse> getCandidateRecommendations(String internshipDescription, List<String> requiredSkills) {
         return webClient.post()
                 .uri("/recommend/candidates")
@@ -66,4 +60,21 @@ public class AiServiceClient {
                 .collectList()
                 .block();
     }
+    public List<Integer> getFilteredRecommendations(String internshipDescription, List<String> applicantProfiles) {
+        // We expect a response like {"recommended_student_ids": [101, 105]}
+        // so we map it to a Map and extract the list.
+        Map<String, List<Integer>> response = webClient.post()
+                .uri("/filter/applicants")
+                .bodyValue(Map.of(
+                        "internship_description", internshipDescription,
+                        "applicant_profiles", applicantProfiles
+                ))
+                .retrieve()
+                .bodyToMono(Map.class)
+                .block();
+
+        return response.getOrDefault("recommended_student_ids", List.of());
+    }
+
+
 }
