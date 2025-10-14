@@ -1,6 +1,7 @@
 package org.campus.campusradarbackend.service;
 
 import org.campus.campusradarbackend.model.InternshipApplication;
+import org.campus.campusradarbackend.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
@@ -53,6 +54,20 @@ public class EmailService {
                         "Thank you for your interest in the '" + internshipTitle + ".\n\n" +
                         "After careful consideration, we have decided to move forward with other candidates at this time. " +
                         "We encourage you to apply for other opportunities on CampusRadar.\n\n" +
+                        "Best regards,\nThe CampusRadar Team"
+        );
+        mailSender.send(message);
+    }
+
+    @Async
+    public void sendAccountApprovalNotification(User user) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(user.getEmail());
+        message.setSubject("Your CampusRadar Account has been Approved!");
+        message.setText(
+                "Dear " + user.getFirstName() + ",\n\n" +
+                        "Welcome to CampusRadar! We are pleased to inform you that your account has been reviewed and approved by an administrator.\n\n" +
+                        "You can now log in to your account and start exploring opportunities.\n\n" +
                         "Best regards,\nThe CampusRadar Team"
         );
         mailSender.send(message);

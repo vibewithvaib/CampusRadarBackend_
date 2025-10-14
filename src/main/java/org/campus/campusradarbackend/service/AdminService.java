@@ -24,15 +24,16 @@ public class AdminService {
     private final UserRepository userRepository;
     private final InternshipPostingRepository internshipPostingRepository;
     private final AiServiceClient aiServiceClient; // Inject the new client
-
+    private final EmailService emailService;
 
 
     @Transactional
     public UserResponse approveUser(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
         user.setEnabled(true);
-        User approvedUser = userRepository.save(user);
 
+        User approvedUser = userRepository.save(user);
+        emailService.sendAccountApprovalNotification(approvedUser);
         // --- INGESTION POINT FOR STUDENTS ---
         // If the approved user is a student, format their profile and send it to the AI service.
         if (approvedUser.getRole() == Role.STUDENT) {
