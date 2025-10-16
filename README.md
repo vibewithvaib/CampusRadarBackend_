@@ -9,7 +9,7 @@
 
 ## 🎯 The Problem
 
-Traditional internship platforms often feel **disconnected and there is no bridge to connect for many campus and industry for internship opportunities**:
+Traditional internship platforms often feel **disconnected and there is no bridge to connect for many campus(specifically) and industries for internship opportunities**:
 
 - 🎓 Students struggle to find opportunities that truly match their skills.  
 - 🧑‍💼 Recruiters are overwhelmed with applications, making it hard to find the right candidates.  
@@ -77,8 +77,6 @@ All endpoints are **secured and role-prefixed** under `/api`.
 | Admin | `/admin/**` | Approvals, dashboard management |
 | AI | `/ai/**` | AI shortlisting & recommendations |
 
-📘 **Swagger UI:** Access live documentation at  
-`http://localhost:8081/swagger-ui.html`
 
 ---
 
@@ -94,7 +92,7 @@ All endpoints are **secured and role-prefixed** under `/api`.
 
 
 
-### Application Configuration
+## Application Configuration
 
 # --- DATABASE ---
 spring.datasource.url=jdbc:mysql://localhost:3306/campusradar_db
@@ -110,5 +108,4 @@ spring.mail.username=youremail@gmail.com
 spring.mail.password=your_google_app_password
 ⚠️ Use a Google App Password instead of your regular Gmail password.
 
-```sql
-CREATE DATABASE campusradar_db;
+
