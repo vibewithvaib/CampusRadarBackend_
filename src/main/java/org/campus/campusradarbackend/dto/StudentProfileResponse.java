@@ -12,7 +12,11 @@ import java.util.List;
 @AllArgsConstructor
 public class StudentProfileResponse {
 
-    private Long id;
+
+    private String firstName;
+    private String lastName;
+    private String email;
+    private String rollNumber;
     private String headline;
     private String resumeUrl;
     private List<String> skills;
@@ -25,7 +29,12 @@ public class StudentProfileResponse {
             return null;
         }
         return new StudentProfileResponse(
-                profile.getId(),
+                profile.getUser().getFirstName(),
+                profile.getUser().getLastName(),
+                profile.getUser().getEmail(),
+                profile.getRollNumber(),
+
+
                 profile.getHeadline(),
                 profile.getResumeUrl(),
                 profile.getSkills(),

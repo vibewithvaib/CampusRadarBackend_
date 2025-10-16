@@ -2,10 +2,12 @@ package org.campus.campusradarbackend.controllers;
 
 import lombok.RequiredArgsConstructor;
 import org.campus.campusradarbackend.dto.ApplicationResponse;
+import org.campus.campusradarbackend.dto.InternshipPostingResponse;
 import org.campus.campusradarbackend.dto.StudentProfileRequest;
 import org.campus.campusradarbackend.dto.StudentProfileResponse;
 import org.campus.campusradarbackend.model.User;
 import org.campus.campusradarbackend.service.ApplicationService;
+import org.campus.campusradarbackend.service.InternshipService;
 import org.campus.campusradarbackend.service.StudentProfileService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -20,7 +22,7 @@ public class StudentController {
 
     private final StudentProfileService studentProfileService;
     private final ApplicationService applicationService;
-
+    private final InternshipService internshipService;
     /**
      * Fetches the profile for the currently authenticated student.
      */
@@ -40,6 +42,12 @@ public class StudentController {
         // The service handles the create/update logic and returns the correct DTO.
         StudentProfileResponse updatedProfile = studentProfileService.createOrUpdateProfile(user, request);
         return ResponseEntity.ok(updatedProfile);
+    }
+    @GetMapping("/internships/{internshipId}")
+    public ResponseEntity<InternshipPostingResponse> getInternshipById(@PathVariable Long internshipId) {
+        System.out.println("called");
+        InternshipPostingResponse response = InternshipPostingResponse.fromEntity(internshipService.getInternshipById(internshipId));
+        return ResponseEntity.ok(response);
     }
 
     /**

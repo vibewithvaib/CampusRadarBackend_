@@ -23,7 +23,7 @@ public class InternshipPosting {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "recruiter_id", nullable = false)
     private User recruiter;
-
+    private String company;
     private String title;
     @Column(columnDefinition = "TEXT")
     private String description;

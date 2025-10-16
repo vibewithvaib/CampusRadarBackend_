@@ -6,7 +6,9 @@ import java.util.List;
 
 @Data
 public class InternshipPostRequest {
+
     private String title;
+    private String company;
     private String description;
     private String location;
     private Integer durationInWeeks;

@@ -21,6 +21,7 @@ public class InternshipService {
     public InternshipPosting createInternship(User recruiter, InternshipPostRequest request) {
         InternshipPosting newPosting = new InternshipPosting();
         newPosting.setRecruiter(recruiter);
+        newPosting.setCompany(request.getCompany());
         newPosting.setTitle(request.getTitle());
         newPosting.setDescription(request.getDescription());
         newPosting.setLocation(request.getLocation());
@@ -49,4 +50,5 @@ public class InternshipService {
                 .map(InternshipPostingResponse::fromEntity)
                 .collect(Collectors.toList());
     }
+
 }

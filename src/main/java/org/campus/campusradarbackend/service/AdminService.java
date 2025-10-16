@@ -45,6 +45,30 @@ public class AdminService {
         return UserResponse.fromEntity(approvedUser);
     }
 
+    @Transactional(readOnly = true)
+    public StudentDetailResponse getStudentDetails(Long studentId) {
+        User user = userRepository.findById(studentId)
+                .orElseThrow(() -> new RuntimeException("Student not found with id: " + studentId));
+
+        if (user.getRole() != Role.STUDENT) {
+            throw new IllegalArgumentException("User is not a student.");
+        }
+
+        return StudentDetailResponse.fromEntity(user);
+    }
+
+    @Transactional(readOnly = true)
+    public RecruiterDetailResponse getRecruiterDetails(Long recruiterId) {
+        User user = userRepository.findById(recruiterId)
+                .orElseThrow(() -> new RuntimeException("Recruiter not found with id: " + recruiterId));
+
+        if (user.getRole() != Role.RECRUITER) {
+            throw new IllegalArgumentException("User is not a recruiter.");
+        }
+
+        return RecruiterDetailResponse.fromEntity(user);
+    }
+
     @Transactional
     public InternshipPosting approveInternship(Long internshipId) {
         InternshipPosting internship = internshipPostingRepository.findById(internshipId)
@@ -102,7 +126,11 @@ public class AdminService {
                 .collect(Collectors.toList());
     }
 
-    public List<InternshipPosting> getPendingInternships() {
-        return internshipPostingRepository.findByisApprovedFalse();
+    public List<InternshipPostingResponse> getPendingInternships() {
+        return internshipPostingRepository.
+                findByisApprovedFalse().
+                stream().
+                map(InternshipPostingResponse::fromEntity).
+                collect(Collectors.toList());
     }
 }

@@ -1,14 +1,12 @@
 package org.campus.campusradarbackend.controllers;
 
 import lombok.RequiredArgsConstructor;
-import org.campus.campusradarbackend.dto.ApplicationResponse;
-import org.campus.campusradarbackend.dto.InternshipPostRequest;
-import org.campus.campusradarbackend.dto.InternshipPostingResponse;
-import org.campus.campusradarbackend.dto.UpdateApplicationStatusUpdate;
+import org.campus.campusradarbackend.dto.*;
 import org.campus.campusradarbackend.model.InternshipPosting;
 import org.campus.campusradarbackend.model.User;
 import org.campus.campusradarbackend.service.ApplicationService;
 import org.campus.campusradarbackend.service.InternshipService;
+import org.campus.campusradarbackend.service.StudentProfileService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +21,7 @@ public class RecruiterController {
 
     private final InternshipService internshipService;
     private final ApplicationService applicationService;
+    private final StudentProfileService studentProfileService;
     // This endpoint is secured for RECRUITERs.
     @PostMapping("/internships")
     public ResponseEntity<InternshipPostingResponse> postInternship(
@@ -63,4 +62,16 @@ public class RecruiterController {
         List<ApplicationResponse> shortlistedApps = applicationService.shortlistRecommendedApplicants(recruiter, internshipId);
         return ResponseEntity.ok(shortlistedApps);
     }
+    @GetMapping("/internships/{internshipId}")
+    public ResponseEntity<InternshipPostingResponse> getInternshipById(@PathVariable Long internshipId) {
+        System.out.println("called");
+        InternshipPostingResponse response = InternshipPostingResponse.fromEntity(internshipService.getInternshipById(internshipId));
+        return ResponseEntity.ok(response);
+    }
+    @GetMapping("/students/{studentId}")
+    public ResponseEntity<StudentProfileResponse> getStudentDetails(@PathVariable Long studentId) {
+        StudentProfileResponse studentDetails = studentProfileService.getStudentDetailsById(studentId);
+        return ResponseEntity.ok(studentDetails);
+    }
+
 }

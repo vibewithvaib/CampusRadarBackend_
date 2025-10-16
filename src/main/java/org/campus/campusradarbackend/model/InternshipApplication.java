@@ -23,6 +23,8 @@ public class InternshipApplication {
     @JoinColumn(name = "internship_id", nullable = false)
     private InternshipPosting internship;
 
+
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ApplicationStatus status;

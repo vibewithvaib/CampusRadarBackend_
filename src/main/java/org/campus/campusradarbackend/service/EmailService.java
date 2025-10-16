@@ -1,9 +1,7 @@
 package org.campus.campusradarbackend.service;
 
-import org.campus.campusradarbackend.model.InternshipApplication;
 import org.campus.campusradarbackend.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
@@ -12,48 +10,48 @@ import org.springframework.stereotype.Service;
 @Service
 public class EmailService {
 
-
-
     @Autowired
     private JavaMailSender mailSender;
 
     @Async
-    public void sendShortlistNotification(String studentEmail, String studentFirstName, String internshipTitle) {
+    public void sendShortlistNotification(String studentEmail, String studentFirstName, String internshipTitle, String companyName) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(studentEmail);
         message.setSubject("Update on your Internship Application for " + internshipTitle);
         message.setText(
                 "Dear " + studentFirstName + ",\n\n" +
                         "Congratulations! We are pleased to inform you that you have been shortlisted for the '" +
-                        internshipTitle + "' position  .\n\n" +
+                        internshipTitle + "' position at " + companyName + ".\n\n" +
                         "The recruiter will be in touch with you regarding the next steps.\n\n" +
                         "Best regards,\nThe CampusRadar Team"
         );
         mailSender.send(message);
     }
 
-    public void sendHiredNotification(String studentEmail, String internshipTitle, String studentFirstName) {
+    @Async
+    public void sendHiredNotification(String studentEmail, String studentFirstName, String internshipTitle, String companyName) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(studentEmail);
-        message.setSubject("Update on your Internship Application for " + internshipTitle);
+        message.setSubject("Congratulations! You've been Hired for the " + internshipTitle + " position!");
         message.setText("Dear " + studentFirstName + ",\n\n" +
-                "Congratulations! We are pleased to inform you that you have been hired for the '" +
-                internshipTitle + "' position  .\n\n" +
-                "The recruiter will be in touch with you regarding the next steps. and your profile has been blacklisted now.\n\n" +
+                "Excellent news! We are thrilled to inform you that " + companyName + " has selected you for the '" +
+                internshipTitle + "' position.\n\n" +
+                "The recruiter will contact you shortly with the official offer letter and onboarding details.\n\n" +
                 "Best regards,\nThe CampusRadar Team");
+        mailSender.send(message);
     }
 
 
     @Async
-    public void sendRejectionNotification(String studentEmail, String studentFirstName, String internshipTitle) {
+    public void sendRejectionNotification(String studentEmail, String studentFirstName, String internshipTitle, String companyName) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(studentEmail);
         message.setSubject("Update on your Internship Application for " + internshipTitle);
         message.setText(
                 "Dear " + studentFirstName + ",\n\n" +
-                        "Thank you for your interest in the '" + internshipTitle + ".\n\n" +
-                        "After careful consideration, we have decided to move forward with other candidates at this time. " +
-                        "We encourage you to apply for other opportunities on CampusRadar.\n\n" +
+                        "Thank you for your interest in the '" + internshipTitle + "' position at " + companyName + ".\n\n" +
+                        "After careful consideration, the hiring team has decided to move forward with other candidates at this time. " +
+                        "We appreciate you taking the time to apply and encourage you to explore other opportunities on CampusRadar.\n\n" +
                         "Best regards,\nThe CampusRadar Team"
         );
         mailSender.send(message);
@@ -72,6 +70,5 @@ public class EmailService {
         );
         mailSender.send(message);
     }
-
-
 }
+

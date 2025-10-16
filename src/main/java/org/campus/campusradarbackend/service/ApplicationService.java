@@ -8,7 +8,6 @@ import org.campus.campusradarbackend.model.InternshipPosting;
 import org.campus.campusradarbackend.model.User;
 import org.campus.campusradarbackend.repository.ApplicationRepository;
 import org.campus.campusradarbackend.repository.InternshipPostingRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,13 +17,13 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
+@RequiredArgsConstructor // This Lombok annotation creates the constructor for all final fields automatically.
 public class ApplicationService {
+
     private final ApplicationRepository applicationRepository;
     private final InternshipPostingRepository internshipRepository;
-    private final EmailService emailService; // 1. Inject the EmailService
+    private final EmailService emailService;
     private final AiServiceClient aiServiceClient;
-
 
     @Transactional
     public ApplicationResponse applyForInternship(User student, Long internshipId) {
@@ -77,35 +76,33 @@ public class ApplicationService {
         application.setStatus(newStatus);
         InternshipApplication updatedApplication = applicationRepository.save(application);
 
-        // --- UPDATED EMAIL TRIGGER POINT ---
-        // Extract the required information into simple strings here,
-        // while the database session is still active. This prevents lazy loading errors.
+        // --- EMAIL TRIGGER POINT ---
         if (newStatus == ApplicationStatus.SHORTLISTED) {
-            System.out.println("Shortlisted");
             emailService.sendShortlistNotification(
                     updatedApplication.getStudent().getEmail(),
                     updatedApplication.getStudent().getFirstName(),
-                    updatedApplication.getInternship().getTitle()
-//                    updatedApplication.getInternship().getCompanyName()
+                    updatedApplication.getInternship().getTitle(),
+                    updatedApplication.getInternship().getCompany()
             );
         } else if (newStatus == ApplicationStatus.REJECTED) {
             emailService.sendRejectionNotification(
                     updatedApplication.getStudent().getEmail(),
                     updatedApplication.getStudent().getFirstName(),
-                    updatedApplication.getInternship().getTitle()
+                    updatedApplication.getInternship().getTitle(),
+                    updatedApplication.getInternship().getCompany()
             );
-        }
-        else if (newStatus == ApplicationStatus.HIRED) {
+        } else if (newStatus == ApplicationStatus.HIRED) {
             emailService.sendHiredNotification(
                     updatedApplication.getStudent().getEmail(),
                     updatedApplication.getStudent().getFirstName(),
-                    updatedApplication.getInternship().getTitle()
-
+                    updatedApplication.getInternship().getTitle(),
+                    updatedApplication.getInternship().getCompany()
             );
         }
 
         return ApplicationResponse.fromEntity(updatedApplication);
     }
+
     @Transactional
     public void revokeApplication(User student, Long applicationId) throws AccessDeniedException {
         InternshipApplication application = applicationRepository.findById(applicationId)
@@ -117,9 +114,9 @@ public class ApplicationService {
 
         applicationRepository.delete(application);
     }
+
     @Transactional
     public List<ApplicationResponse> shortlistRecommendedApplicants(User recruiter, Long internshipId) throws AccessDeniedException {
-        // 1. Fetch the internship and ensure the recruiter owns it.
         InternshipPosting internship = internshipRepository.findById(internshipId)
                 .orElseThrow(() -> new RuntimeException("Internship not found"));
 
@@ -127,41 +124,34 @@ public class ApplicationService {
             throw new AccessDeniedException("You are not authorized to manage this internship.");
         }
 
-        // 2. Fetch all eligible applicants (those who have 'APPLIED').
         List<InternshipApplication> eligibleApplicants = applicationRepository.findByInternshipIdAndStatus(internshipId, ApplicationStatus.APPLIED);
 
         if (eligibleApplicants.isEmpty()) {
-            return List.of(); // Return empty if no one has applied yet.
+            return List.of();
         }
 
-        // 3. Format the data for the Python AI service.
         String internshipDescription = formatInternshipForRag(internship);
         List<String> applicantProfiles = eligibleApplicants.stream()
                 .map(this::formatStudentForRagFromApp)
                 .toList();
 
-        // 4. Call the AI to get the IDs of the best candidates from the provided list.
         List<Integer> recommendedIds = aiServiceClient.getFilteredRecommendations(internshipDescription, applicantProfiles);
 
         if (recommendedIds.isEmpty()) {
-            return List.of(); // Return empty if the AI found no good matches.
+            return List.of();
         }
 
-        // Create a fast lookup map of: studentId -> their application object
         Map<Long, InternshipApplication> eligibleApplicantsMap = eligibleApplicants.stream()
                 .collect(Collectors.toMap(app -> app.getStudent().getId(), app -> app));
 
-        // 5. Update the status for each AI-recommended student and collect the results.
         return recommendedIds.stream()
-                .map(id -> (long)id) // Convert Integer to Long for map key
-                .filter(eligibleApplicantsMap::containsKey) // Ensure the ID is valid
+                .map(id -> (long)id)
+                .filter(eligibleApplicantsMap::containsKey)
                 .map(eligibleApplicantsMap::get)
                 .map(appToShortlist -> {
                     try {
-                        // Reuse the existing update method to change status and trigger emails
                         return updateApplicationStatus(recruiter, appToShortlist.getId(), ApplicationStatus.SHORTLISTED);
                     } catch (AccessDeniedException e) {
-                        // This should not happen due to the initial check, but is good practice.
                         return null;
                     }
                 })
@@ -190,5 +180,5 @@ public class ApplicationService {
         sb.append("Required Skills: ").append(String.join(", ", internship.getRequiredSkills())).append("\n");
         return sb.toString();
     }
-
 }
+

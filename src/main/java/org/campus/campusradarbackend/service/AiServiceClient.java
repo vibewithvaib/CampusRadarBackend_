@@ -49,6 +49,8 @@ public class AiServiceClient {
      * The request body for this endpoint also needs to be updated.
      */
     public List<AiInternshipResponse> getInternshipRecommendations(String studentProfile, List<String> studentSkills) {
+        System.out.println(studentProfile);
+        System.out.println(studentSkills);
         return webClient.post()
                 .uri("/recommend/internships")
                 .bodyValue(Map.of(
@@ -64,7 +66,7 @@ public class AiServiceClient {
         // We expect a response like {"recommended_student_ids": [101, 105]}
         // so we map it to a Map and extract the list.
         Map<String, List<Integer>> response = webClient.post()
-                .uri("/filter/applicants")
+                .uri("/recommend/candidates")
                 .bodyValue(Map.of(
                         "internship_description", internshipDescription,
                         "applicant_profiles", applicantProfiles

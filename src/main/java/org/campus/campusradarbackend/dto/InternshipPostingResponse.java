@@ -13,6 +13,7 @@ import java.util.List;
 public class InternshipPostingResponse {
     private Long id;
     private String title;
+    private String company;
     private String description;
     private String location;
     private Integer durationInWeeks;
@@ -28,6 +29,7 @@ public class InternshipPostingResponse {
         return new InternshipPostingResponse(
                 posting.getId(),
                 posting.getTitle(),
+                posting.getCompany(),
                 posting.getDescription(),
                 posting.getLocation(),
                 posting.getDurationInWeeks(),

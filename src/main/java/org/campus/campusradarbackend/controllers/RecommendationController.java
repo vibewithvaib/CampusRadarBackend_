@@ -40,7 +40,9 @@ public class RecommendationController {
     @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<List<AiInternshipResponse>> getInternshipRecommendations(@AuthenticationPrincipal User student) {
         String studentProfileText = formatStudentForRag(student);
+        System.out.println(studentProfileText);
         List<String> studentSkills = student.getStudentProfile() != null ? student.getStudentProfile().getSkills() : List.of();
+        System.out.println(studentSkills);
         List<AiInternshipResponse> recommendations = aiServiceClient.getInternshipRecommendations(studentProfileText, studentSkills);
         return ResponseEntity.ok(recommendations);
     }
@@ -92,6 +94,7 @@ public class RecommendationController {
     private String formatInternshipForRag(InternshipPosting internship) {
         StringBuilder sb = new StringBuilder();
         sb.append("Internship Posting:\n");
+        sb.append("Company: ").append(internship.getCompany()).append("\n");
         sb.append("Title: ").append(internship.getTitle()).append("\n");
         sb.append("Description: ").append(internship.getDescription()).append("\n");
         sb.append("Required Skills: ").append(String.join(", ", internship.getRequiredSkills())).append("\n");

@@ -1,5 +1,6 @@
 package org.campus.campusradarbackend.repository;
 
+import org.campus.campusradarbackend.dto.InternshipPostingResponse;
 import org.campus.campusradarbackend.model.InternshipPosting;
 import org.springframework.data.jpa.repository.JpaRepository;
 

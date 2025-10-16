@@ -1,11 +1,14 @@
 package org.campus.campusradarbackend.service;
 
 import lombok.RequiredArgsConstructor;
+import org.campus.campusradarbackend.dto.StudentDetailResponse;
 import org.campus.campusradarbackend.dto.StudentProfileRequest;
 import org.campus.campusradarbackend.dto.StudentProfileResponse;
+import org.campus.campusradarbackend.model.Role;
 import org.campus.campusradarbackend.model.StudentProfile;
 import org.campus.campusradarbackend.model.User;
 import org.campus.campusradarbackend.repository.StudentProfileRepository;
+import org.campus.campusradarbackend.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +20,7 @@ public class StudentProfileService {
 
     private final StudentProfileRepository studentProfileRepository;
     private final AiServiceClient aiServiceClient;
+    private final UserRepository userRepository;
 
     public StudentProfileResponse getStudentProfile(User user) {
         StudentProfile profile = studentProfileRepository.findByUserId(user.getId())
@@ -59,5 +63,17 @@ public class StudentProfileService {
             sb.append("Skills: ").append(String.join(", ", student.getStudentProfile().getSkills())).append("\n");
         }
         return sb.toString();
+    }
+    @Transactional(readOnly = true)
+    public StudentProfileResponse getStudentDetailsById(Long studentId) {
+        User user = userRepository.findById(studentId)
+                .orElseThrow(() -> new RuntimeException("Student not found with id: " + studentId));
+
+        // Ensure the user being fetched is actually a student
+        if (user.getRole() != Role.STUDENT) {
+            throw new IllegalArgumentException("User with the given ID is not a student.");
+        }
+
+        return StudentProfileResponse.fromEntity(user.getStudentProfile());
     }
 }
