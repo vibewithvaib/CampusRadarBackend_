@@ -12,8 +12,7 @@
 Traditional internship platforms often feel **disconnected and there is no bridge to connect for many campus(specifically) and industries for internship opportunities**:
 
 - 🎓 Students struggle to find opportunities that truly match their skills.  
-- 🧑‍💼 Recruiters are overwhelmed with applications, making it hard to find the right candidates.  
-- 🏛️ College Admins have no oversight, making it difficult to track student participation or verify internships for academic credit (a key requirement under **NEP 2020**).  
+- 🧑‍💼 Recruiters are overwhelmed with applications, making it hard to find the right candidates.    
 
 **CampusRadar bridges these gaps by creating a single, intelligent ecosystem.**
 
